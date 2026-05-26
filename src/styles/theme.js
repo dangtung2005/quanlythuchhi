@@ -1,0 +1,117 @@
+import { StyleSheet } from 'react-native';
+
+export const THEMES = {
+  light: {
+    mode: 'light',
+    background: '#f2fbf6',
+    surface: '#ffffff',
+    surfaceAlt: '#f7fcf9',
+    surfaceMuted: '#eef8f2',
+    border: '#dcefe5',
+    borderSoft: '#e4f2ea',
+    text: '#103b2d',
+    textMuted: '#6f877b',
+    textSoft: '#8da195',
+    accent: '#16a36a',
+    accentStrong: '#14915f',
+    accentSoft: '#dff8eb',
+    accentText: '#ffffff',
+    hero: '#16a36a',
+    heroOverlay: 'rgba(6, 56, 37, 0.18)',
+    iconSurface: '#ffffff',
+    iconColor: '#103b2d',
+    modalOverlay: 'rgba(25, 18, 10, 0.35)',
+    modalSurface: '#fff9f0',
+    modalSurfaceAlt: '#fffdf8',
+    modalBorder: '#f3e6d8',
+    modalMuted: '#8a7863',
+    warmText: '#2d241c',
+    warmSubtle: '#5d4f42',
+    warmSoft: '#9b8a79',
+    noticeClose: '#fff3e6',
+    bottomBar: '#ffffff',
+    bottomBarBorder: '#dcefe5',
+    bottomInactive: '#7d8f86',
+    danger: '#d56539',
+    warning: '#ee8e34',
+    info: '#4b7bec',
+    success: '#1d9c63',
+  },
+  dark: {
+    mode: 'dark',
+    background: '#050505',
+    surface: '#141716',
+    surfaceAlt: '#1a1f1d',
+    surfaceMuted: '#1f2522',
+    border: '#29302c',
+    borderSoft: '#323933',
+    text: '#f3f8f5',
+    textMuted: '#a2b0a8',
+    textSoft: '#809087',
+    accent: '#52d67d',
+    accentStrong: '#36c468',
+    accentSoft: '#173423',
+    accentText: '#06140c',
+    hero: '#0f8a58',
+    heroOverlay: 'rgba(255, 255, 255, 0.08)',
+    iconSurface: '#1b211e',
+    iconColor: '#f3f8f5',
+    modalOverlay: 'rgba(0, 0, 0, 0.6)',
+    modalSurface: '#111312',
+    modalSurfaceAlt: '#181b1a',
+    modalBorder: '#2b322d',
+    modalMuted: '#9ba8a1',
+    warmText: '#f3f8f5',
+    warmSubtle: '#c3cec8',
+    warmSoft: '#96a39b',
+    noticeClose: '#1d2220',
+    bottomBar: '#161917',
+    bottomBarBorder: '#262d29',
+    bottomInactive: '#98a49e',
+    danger: '#ff8f67',
+    warning: '#f4b44f',
+    info: '#72a7ff',
+    success: '#52d67d',
+  },
+};
+
+export function resolveTheme(mode = 'light', systemScheme = 'light') {
+  if (mode === 'auto') {
+    return systemScheme === 'dark' ? THEMES.dark : THEMES.light;
+  }
+
+  return mode === 'dark' ? THEMES.dark : THEMES.light;
+}
+
+export function createAppStyles(theme) {
+  return StyleSheet.create({
+    scrollContent: {
+      paddingHorizontal: 18,
+      paddingTop: 12,
+      paddingBottom: 120,
+    },
+    sectionHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    sectionTitle: { fontSize: 18, fontWeight: '800', color: theme.text },
+    sectionLink: { fontSize: 13, fontWeight: '700', color: theme.accentStrong },
+    panelCard: {
+      backgroundColor: theme.surface,
+      borderRadius: 24,
+      padding: 18,
+      marginBottom: 18,
+      borderWidth: 1,
+      borderColor: theme.border,
+      shadowColor: theme.mode === 'dark' ? '#000000' : '#0e3a2b',
+      shadowOpacity: theme.mode === 'dark' ? 0.22 : 0.05,
+      shadowRadius: 12,
+      shadowOffset: { width: 0, height: 6 },
+      elevation: 2,
+    },
+    screenTitle: { fontSize: 28, fontWeight: '800', color: theme.text, marginBottom: 8 },
+    screenSubtitle: { fontSize: 14, color: theme.textMuted, lineHeight: 20, marginBottom: 22 },
+  });
+}
