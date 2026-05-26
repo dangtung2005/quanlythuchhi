@@ -40,9 +40,11 @@ export default function App() {
     loading,
     saving,
     addBudget,
+    addWallet,
     addTransaction,
     updateTransaction,
     deleteTransaction,
+    deleteWallet,
     updateWallet,
     updateBudget,
     deleteBudget,
@@ -152,6 +154,11 @@ export default function App() {
     setWalletModalVisible(true);
   }
 
+  function openCreateWalletModal() {
+    setEditingWallet(null);
+    setWalletModalVisible(true);
+  }
+
   function openEditBudgetModal(budget) {
     setEditingBudget(budget);
     setBudgetModalVisible(true);
@@ -242,7 +249,14 @@ export default function App() {
     }
 
     if (activeTab === 'wallets') {
-      return <WalletsScreen data={data} theme={theme} onEditWallet={openEditWalletModal} />;
+      return (
+        <WalletsScreen
+          data={data}
+          theme={theme}
+          onEditWallet={openEditWalletModal}
+          onAddWallet={openCreateWalletModal}
+        />
+      );
     }
 
     return (
@@ -430,9 +444,11 @@ export default function App() {
               setWalletModalVisible(false);
               setEditingWallet(null);
             }}
-            onSubmit={updateWallet}
+            onSubmit={editingWallet ? updateWallet : addWallet}
+            onDelete={deleteWallet}
             wallet={editingWallet}
             saving={saving}
+            isCreateMode={!editingWallet}
           />
 
           <EditBudgetModal

@@ -42,6 +42,17 @@ export function useFinanceApp() {
     }
   }, []);
 
+  const addWallet = React.useCallback(async (wallet) => {
+    setSaving(true);
+    try {
+      const nextData = await financeApi.addWallet(wallet);
+      setData(nextData);
+      return nextData;
+    } finally {
+      setSaving(false);
+    }
+  }, []);
+
   const resetDemo = React.useCallback(async () => {
     setSaving(true);
     try {
@@ -107,6 +118,17 @@ export function useFinanceApp() {
     }
   }, []);
 
+  const deleteWallet = React.useCallback(async (walletId) => {
+    setSaving(true);
+    try {
+      const nextData = await financeApi.deleteWallet(walletId);
+      setData(nextData);
+      return nextData;
+    } finally {
+      setSaving(false);
+    }
+  }, []);
+
   const updateSettings = React.useCallback(async (updates) => {
     setSaving(true);
     try {
@@ -134,10 +156,12 @@ export function useFinanceApp() {
     loading,
     saving,
     addBudget,
+    addWallet,
     addTransaction,
     updateTransaction,
     deleteTransaction,
     updateWallet,
+    deleteWallet,
     updateBudget,
     deleteBudget,
     updateSettings,

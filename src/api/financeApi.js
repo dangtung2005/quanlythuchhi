@@ -285,6 +285,33 @@ export const financeApi = {
     return saveFinanceData({ ...data, wallets });
   },
 
+  async addWallet(wallet) {
+    const data = await readFinanceData();
+    const nextWallet = {
+      id: `w${Date.now()}`,
+      name: wallet.name.trim(),
+      amount: wallet.amount,
+      color: wallet.color || '#4b7bec',
+    };
+
+    return saveFinanceData({
+      ...data,
+      wallets: [nextWallet, ...data.wallets],
+    });
+  },
+
+  async deleteWallet(walletId) {
+    const data = await readFinanceData();
+    const transactionsUsingWallet = data.transactions.some((item) => item.walletId === walletId);
+
+    if (transactionsUsingWallet) {
+      throw new Error('WALLET_IN_USE');
+    }
+
+    const wallets = data.wallets.filter((wallet) => wallet.id !== walletId);
+    return saveFinanceData({ ...data, wallets });
+  },
+
   async updateBudget(budgetId, updates) {
     const data = await readFinanceData();
     const budgets = data.budgets.map((budget) =>

@@ -63,29 +63,12 @@ export default function NumberPadModal({
   submitText = 'Nhập',
 }) {
   const [draftValue, setDraftValue] = useState('0');
-  const valueScale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     if (visible) {
       setDraftValue(value && value !== '' ? String(value) : '0');
     }
   }, [value, visible]);
-
-  useEffect(() => {
-    Animated.sequence([
-      Animated.timing(valueScale, {
-        toValue: 0.985,
-        duration: 70,
-        useNativeDriver: true,
-      }),
-      Animated.spring(valueScale, {
-        toValue: 1,
-        speed: 26,
-        bounciness: 4,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [draftValue, valueScale]);
 
   function handleKeyPress(key) {
     if (key === 'clear') {
@@ -134,15 +117,10 @@ export default function NumberPadModal({
             </Pressable>
           </View>
 
-          <Animated.View
-            style={[
-              styles.valueCard,
-              { transform: [{ scale: valueScale }] },
-            ]}
-          >
+          <View style={styles.valueCard}>
             <Text style={styles.valueLabel}>{displayLabel}</Text>
             <Text style={styles.valueText}>{displayValue}</Text>
-          </Animated.View>
+          </View>
 
           <View style={styles.grid}>
             {KEYS.map((key) => (
