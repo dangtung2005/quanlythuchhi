@@ -62,7 +62,10 @@ export default function App() {
   const [budgetModalVisible, setBudgetModalVisible] = useState(false);
   const [editingBudget, setEditingBudget] = useState(null);
   const [transactionGroupVisible, setTransactionGroupVisible] = useState(false);
-  const [transactionGroupType, setTransactionGroupType] = useState('expense');
+  const [transactionGroupConfig, setTransactionGroupConfig] = useState({
+    title: '',
+    transactions: [],
+  });
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [dateModalVisible, setDateModalVisible] = useState(false);
   const [readNotificationIds, setReadNotificationIds] = useState([]);
@@ -164,8 +167,8 @@ export default function App() {
     setBudgetModalVisible(true);
   }
 
-  function openTransactionGroup(type) {
-    setTransactionGroupType(type);
+  function openTransactionGroup(config) {
+    setTransactionGroupConfig(config);
     setTransactionGroupVisible(true);
   }
 
@@ -241,9 +244,11 @@ export default function App() {
           theme={theme}
           selectedDate={selectedDate}
           onEditBudget={openEditBudgetModal}
+          onEditTransaction={openEditModal}
           onDeleteBudget={deleteBudget}
           onChangeMonth={handleChangeMonth}
           onOpenDateFilter={() => setDateModalVisible(true)}
+          onOpenTransactionGroup={openTransactionGroup}
         />
       );
     }
@@ -276,12 +281,6 @@ export default function App() {
   const walletMap = data
     ? Object.fromEntries(data.wallets.map((wallet) => [wallet.id, wallet.name]))
     : {};
-
-  const groupedTransactions = data
-    ? getTransactionsForMonth(data.transactions, selectedDate).filter(
-        (item) => item.type === transactionGroupType
-      )
-    : [];
 
   function buildNotifications() {
     if (!data) return [];
@@ -473,12 +472,8 @@ export default function App() {
           <TransactionGroupModal
             visible={transactionGroupVisible}
             onClose={() => setTransactionGroupVisible(false)}
-            title={
-              transactionGroupType === 'income'
-                ? t('transaction_group_income', { month: selectedDate.getMonth() + 1 })
-                : t('transaction_group_expense', { month: selectedDate.getMonth() + 1 })
-            }
-            transactions={groupedTransactions}
+            title={transactionGroupConfig.title}
+            transactions={transactionGroupConfig.transactions}
             walletMap={walletMap}
             onSelectTransaction={openEditModal}
             onDeleteTransaction={deleteTransaction}

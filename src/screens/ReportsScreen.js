@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Circle, G, Line, Text as SvgText } from 'react-native-svg';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import SearchBar from '../components/SearchBar';
 import SectionHeader from '../components/SectionHeader';
 import SwipeableRow from '../components/SwipeableRow';
+import TransactionItem from '../components/TransactionItem';
 import { CATEGORY_PRESETS } from '../data/seedData';
 import { createAppStyles } from '../styles/appStyles';
 import { getVietnamDateParts } from '../utils/dateTime';
@@ -74,7 +76,6 @@ function DonutChart({ data, theme, type }) {
   const segments = data.map((item) => {
     const segment = {
       ...item,
-      startPercent: runningPercent,
       midPercent: runningPercent + item.percent / 2,
     };
     runningPercent += item.percent;
@@ -123,7 +124,6 @@ function DonutChart({ data, theme, type }) {
                 fill="none"
               />
             );
-
             offset += segmentLength;
             return circle;
           })}
@@ -144,23 +144,10 @@ function DonutChart({ data, theme, type }) {
             <G key={`${item.categoryKey}-label`}>
               <Line x1={lineStartX} y1={lineStartY} x2={lineEndX} y2={lineEndY} stroke={item.tint} strokeWidth="2" />
               <Line x1={lineEndX} y1={lineEndY} x2={horizontalX} y2={lineEndY} stroke={item.tint} strokeWidth="2" />
-              <SvgText
-                x={textX}
-                y={lineEndY - 4}
-                fill={theme.textMuted}
-                fontSize="11"
-                textAnchor={anchor}
-              >
+              <SvgText x={textX} y={lineEndY - 4} fill={theme.textMuted} fontSize="11" textAnchor={anchor}>
                 {formatPercent(item.percent)}
               </SvgText>
-              <SvgText
-                x={textX}
-                y={lineEndY + 16}
-                fill={theme.text}
-                fontSize="13"
-                fontWeight="700"
-                textAnchor={anchor}
-              >
+              <SvgText x={textX} y={lineEndY + 16} fill={theme.text} fontSize="13" fontWeight="700" textAnchor={anchor}>
                 {item.category}
               </SvgText>
             </G>
@@ -169,9 +156,7 @@ function DonutChart({ data, theme, type }) {
       </Svg>
 
       <View style={styles.chartCenter}>
-        <Text style={styles.chartCenterLabel}>
-          {type === 'expense' ? t('expense') : t('income')}
-        </Text>
+        <Text style={styles.chartCenterLabel}>{type === 'expense' ? t('expense') : t('income')}</Text>
         <Text style={styles.chartCenterValue}>{formatCurrency(total)}</Text>
       </View>
     </View>
@@ -180,15 +165,8 @@ function DonutChart({ data, theme, type }) {
 
 const stylesFactory = (theme) =>
   StyleSheet.create({
-    root: {
-      flex: 1,
-      backgroundColor: theme.background,
-    },
-    content: {
-      paddingTop: 0,
-      paddingBottom: 120,
-      paddingHorizontal: 0,
-    },
+    root: { flex: 1, backgroundColor: theme.background },
+    content: { paddingTop: 0, paddingBottom: 120, paddingHorizontal: 0 },
     topBar: {
       paddingHorizontal: 18,
       paddingTop: 8,
@@ -197,16 +175,8 @@ const stylesFactory = (theme) =>
       borderBottomWidth: 1,
       borderBottomColor: theme.border,
     },
-    topBarRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    },
-    title: {
-      fontSize: 30,
-      fontWeight: '800',
-      color: theme.text,
-    },
+    topBarRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    title: { fontSize: 30, fontWeight: '800', color: theme.text },
     topBarAction: {
       width: 44,
       height: 44,
@@ -215,6 +185,7 @@ const stylesFactory = (theme) =>
       justifyContent: 'center',
       backgroundColor: theme.surfaceAlt,
     },
+    topSearchWrap: { paddingHorizontal: 18, paddingTop: 14 },
     monthBar: {
       marginTop: 14,
       paddingHorizontal: 18,
@@ -229,13 +200,7 @@ const stylesFactory = (theme) =>
       justifyContent: 'space-between',
       gap: 12,
     },
-    monthButton: {
-      width: 42,
-      height: 42,
-      borderRadius: 21,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
+    monthButton: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center' },
     monthCard: {
       flex: 1,
       minHeight: 76,
@@ -249,13 +214,7 @@ const stylesFactory = (theme) =>
       paddingHorizontal: 18,
       gap: 16,
     },
-    monthText: {
-      flex: 1,
-      textAlign: 'center',
-      fontSize: 24,
-      fontWeight: '800',
-      color: theme.text,
-    },
+    monthText: { flex: 1, textAlign: 'center', fontSize: 24, fontWeight: '800', color: theme.text },
     summaryCard: {
       marginHorizontal: 18,
       marginTop: 18,
@@ -265,55 +224,16 @@ const stylesFactory = (theme) =>
       borderWidth: 1,
       borderColor: theme.border,
     },
-    summaryRow: {
-      flexDirection: 'row',
-      borderBottomWidth: 1,
-      borderBottomColor: theme.border,
-    },
-    summarySplit: {
-      flex: 1,
-      paddingVertical: 22,
-      paddingHorizontal: 16,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    summaryDivider: {
-      width: 1,
-      backgroundColor: theme.border,
-    },
-    summaryLabel: {
-      fontSize: 15,
-      color: theme.textMuted,
-      marginBottom: 10,
-    },
-    summaryValue: {
-      fontSize: 27,
-      fontWeight: '800',
-    },
-    expenseValue: {
-      color: theme.danger,
-    },
-    incomeValue: {
-      color: theme.info,
-    },
-    netRow: {
-      paddingVertical: 18,
-      paddingHorizontal: 16,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 12,
-    },
-    netLabel: {
-      fontSize: 18,
-      color: theme.textMuted,
-      fontWeight: '600',
-    },
-    netValue: {
-      fontSize: 30,
-      color: theme.text,
-      fontWeight: '800',
-    },
+    summaryRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: theme.border },
+    summarySplit: { flex: 1, paddingVertical: 22, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center' },
+    summaryDivider: { width: 1, backgroundColor: theme.border },
+    summaryLabel: { fontSize: 15, color: theme.textMuted, marginBottom: 10 },
+    summaryValue: { fontSize: 27, fontWeight: '800' },
+    expenseValue: { color: theme.danger },
+    incomeValue: { color: theme.info },
+    netRow: { paddingVertical: 18, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 },
+    netLabel: { fontSize: 18, color: theme.textMuted, fontWeight: '600' },
+    netValue: { fontSize: 30, color: theme.text, fontWeight: '800' },
     tabs: {
       marginTop: 18,
       flexDirection: 'row',
@@ -323,25 +243,10 @@ const stylesFactory = (theme) =>
       borderBottomWidth: 1,
       borderBottomColor: theme.border,
     },
-    tabButton: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingVertical: 16,
-      borderBottomWidth: 3,
-      borderBottomColor: 'transparent',
-    },
-    tabButtonActive: {
-      borderBottomColor: theme.info,
-    },
-    tabLabel: {
-      fontSize: 18,
-      fontWeight: '700',
-      color: theme.textMuted,
-    },
-    tabLabelActive: {
-      color: theme.info,
-    },
+    tabButton: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 16, borderBottomWidth: 3, borderBottomColor: 'transparent' },
+    tabButtonActive: { borderBottomColor: theme.info },
+    tabLabel: { fontSize: 18, fontWeight: '700', color: theme.textMuted },
+    tabLabelActive: { color: theme.info },
     chartCard: {
       marginHorizontal: 18,
       marginTop: 18,
@@ -353,123 +258,30 @@ const stylesFactory = (theme) =>
       paddingHorizontal: 12,
       alignItems: 'center',
     },
-    chartWrap: {
-      width: '100%',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    chartCenter: {
-      position: 'absolute',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    chartCenterLabel: {
-      color: theme.textMuted,
-      fontSize: 15,
-      marginBottom: 6,
-    },
-    chartCenterValue: {
-      color: theme.text,
-      fontSize: 19,
-      fontWeight: '800',
-      textAlign: 'center',
-      paddingHorizontal: 36,
-    },
-    chartEmptyWrap: {
-      width: '100%',
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingVertical: 24,
-    },
-    chartEmptyCircle: {
-      width: 164,
-      height: 164,
-      borderRadius: 82,
-      borderWidth: 26,
-      borderColor: theme.surfaceMuted,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginBottom: 18,
-    },
-    chartEmptyText: {
-      color: theme.textMuted,
-      fontSize: 15,
-    },
-    categoryList: {
-      marginTop: 12,
-      width: '100%',
-    },
-    categoryRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: 16,
-      borderTopWidth: 1,
-      borderTopColor: theme.border,
-    },
-    categoryIconWrap: {
-      width: 48,
-      height: 48,
-      borderRadius: 16,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginRight: 14,
-      backgroundColor: theme.surfaceAlt,
-    },
-    categoryTextWrap: {
-      flex: 1,
-      marginRight: 10,
-    },
-    categoryName: {
-      fontSize: 17,
-      fontWeight: '700',
-      color: theme.text,
-      marginBottom: 4,
-    },
-    categoryMeta: {
-      fontSize: 13,
-      color: theme.textMuted,
-    },
-    categoryAmountWrap: {
-      alignItems: 'flex-end',
-      marginRight: 10,
-    },
-    categoryAmount: {
-      fontSize: 17,
-      fontWeight: '800',
-      color: theme.text,
-      marginBottom: 4,
-    },
-    categoryPercent: {
-      fontSize: 13,
-      color: theme.textMuted,
-      fontWeight: '600',
-    },
-    budgetPanel: {
-      marginHorizontal: 18,
-      marginTop: 18,
-    },
+    chartWrap: { width: '100%', alignItems: 'center', justifyContent: 'center' },
+    chartCenter: { position: 'absolute', alignItems: 'center', justifyContent: 'center' },
+    chartCenterLabel: { color: theme.textMuted, fontSize: 15, marginBottom: 6 },
+    chartCenterValue: { color: theme.text, fontSize: 19, fontWeight: '800', textAlign: 'center', paddingHorizontal: 36 },
+    chartEmptyWrap: { width: '100%', alignItems: 'center', justifyContent: 'center', paddingVertical: 24 },
+    chartEmptyCircle: { width: 164, height: 164, borderRadius: 82, borderWidth: 26, borderColor: theme.surfaceMuted, alignItems: 'center', justifyContent: 'center', marginBottom: 18 },
+    chartEmptyText: { color: theme.textMuted, fontSize: 15 },
+    categoryList: { marginTop: 12, width: '100%' },
+    categoryRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 16, borderTopWidth: 1, borderTopColor: theme.border },
+    categoryIconWrap: { width: 48, height: 48, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginRight: 14, backgroundColor: theme.surfaceAlt },
+    categoryTextWrap: { flex: 1, marginRight: 10 },
+    categoryName: { fontSize: 17, fontWeight: '700', color: theme.text, marginBottom: 4 },
+    categoryMeta: { fontSize: 13, color: theme.textMuted },
+    categoryAmountWrap: { alignItems: 'flex-end', marginRight: 10 },
+    categoryAmount: { fontSize: 17, fontWeight: '800', color: theme.text, marginBottom: 4 },
+    categoryPercent: { fontSize: 13, color: theme.textMuted, fontWeight: '600' },
+    resultPanel: { marginHorizontal: 18, marginTop: 18 },
+    budgetPanel: { marginHorizontal: 18, marginTop: 18 },
     emptyWrap: { paddingVertical: 8, alignItems: 'flex-start' },
     emptyText: { fontSize: 14, color: theme.textMuted, marginBottom: 12 },
-    addBudgetButton: {
-      backgroundColor: theme.accent,
-      borderRadius: 16,
-      paddingHorizontal: 18,
-      paddingVertical: 12,
-    },
+    addBudgetButton: { backgroundColor: theme.accent, borderRadius: 16, paddingHorizontal: 18, paddingVertical: 12 },
     addBudgetText: { color: '#ffffff', fontSize: 15, fontWeight: '800' },
-    budgetCard: {
-      marginBottom: 14,
-      backgroundColor: theme.surfaceAlt,
-      borderRadius: 18,
-      padding: 14,
-      borderWidth: 1,
-      borderColor: theme.borderSoft,
-    },
-    budgetHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      marginBottom: 10,
-    },
+    budgetCard: { marginBottom: 14, backgroundColor: theme.surfaceAlt, borderRadius: 18, padding: 14, borderWidth: 1, borderColor: theme.borderSoft },
+    budgetHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
     budgetTitle: { fontSize: 15, fontWeight: '700', color: theme.text },
     budgetAmount: { fontSize: 12, color: theme.textMuted, marginLeft: 10 },
     track: { height: 10, backgroundColor: theme.surfaceMuted, borderRadius: 999, overflow: 'hidden' },
@@ -482,27 +294,63 @@ export default function ReportsScreen({
   theme,
   selectedDate,
   onEditBudget,
+  onEditTransaction,
   onDeleteBudget,
   onChangeMonth,
   onOpenDateFilter,
+  onOpenTransactionGroup,
 }) {
   const appStyles = createAppStyles(theme);
   const styles = stylesFactory(theme);
   const insights = analyzeFinance(data, selectedDate);
   const [activeType, setActiveType] = React.useState('expense');
+  const [showSearch, setShowSearch] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState('');
   const monthLabel = formatMonthToken(selectedDate);
-  const breakdown = groupTransactionsByCategory(insights.monthTransactions, activeType);
+  const walletMap = Object.fromEntries(data.wallets.map((wallet) => [wallet.id, wallet.name]));
+  const searchLower = searchQuery.trim().toLowerCase();
+  const searchedTransactions = useMemo(
+    () =>
+      !searchLower
+        ? insights.monthTransactions
+        : insights.monthTransactions.filter(
+            (item) =>
+              item.title.toLowerCase().includes(searchLower) ||
+              item.category.toLowerCase().includes(searchLower) ||
+              (item.note && item.note.toLowerCase().includes(searchLower))
+          ),
+    [insights.monthTransactions, searchLower]
+  );
+  const breakdown = groupTransactionsByCategory(searchedTransactions, activeType);
   const netAmount = insights.monthIncome - insights.monthExpense;
+  const filteredBudgetSnapshot = useMemo(
+    () =>
+      !searchLower
+        ? insights.budgetSnapshot
+        : insights.budgetSnapshot.filter((budget) =>
+            budget.category.toLowerCase().includes(searchLower)
+          ),
+    [insights.budgetSnapshot, searchLower]
+  );
 
   return (
     <View style={styles.root}>
       <View style={styles.topBar}>
         <View style={styles.topBarRow}>
           <Text style={styles.title}>Báo cáo</Text>
-          <TouchableOpacity activeOpacity={0.85} style={styles.topBarAction} onPress={() => {}}>
+          <TouchableOpacity
+            activeOpacity={0.85}
+            style={styles.topBarAction}
+            onPress={() => setShowSearch((current) => !current)}
+          >
             <Ionicons name="search-outline" size={28} color={theme.text} />
           </TouchableOpacity>
         </View>
+        {showSearch ? (
+          <View style={styles.topSearchWrap}>
+            <SearchBar value={searchQuery} onChangeText={setSearchQuery} theme={theme} />
+          </View>
+        ) : null}
       </View>
 
       <View style={styles.monthBar}>
@@ -518,35 +366,23 @@ export default function ReportsScreen({
         </TouchableOpacity>
       </View>
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        directionalLockEnabled
-        bounces={false}
-        contentContainerStyle={[appStyles.scrollContent, styles.content]}
-      >
+      <ScrollView showsVerticalScrollIndicator={false} directionalLockEnabled bounces={false} contentContainerStyle={[appStyles.scrollContent, styles.content]}>
         <View style={styles.summaryCard}>
           <View style={styles.summaryRow}>
             <View style={styles.summarySplit}>
               <Text style={styles.summaryLabel}>Chi tiêu</Text>
-              <Text style={[styles.summaryValue, styles.expenseValue]}>
-                -{formatCurrency(insights.monthExpense)}
-              </Text>
+              <Text style={[styles.summaryValue, styles.expenseValue]}>-{formatCurrency(insights.monthExpense)}</Text>
             </View>
             <View style={styles.summaryDivider} />
             <View style={styles.summarySplit}>
               <Text style={styles.summaryLabel}>Thu nhập</Text>
-              <Text style={[styles.summaryValue, styles.incomeValue]}>
-                +{formatCurrency(insights.monthIncome)}
-              </Text>
+              <Text style={[styles.summaryValue, styles.incomeValue]}>+{formatCurrency(insights.monthIncome)}</Text>
             </View>
           </View>
 
           <View style={styles.netRow}>
             <Text style={styles.netLabel}>Thu chi</Text>
-            <Text style={styles.netValue}>
-              {netAmount > 0 ? '+' : ''}
-              {formatCurrency(netAmount)}
-            </Text>
+            <Text style={styles.netValue}>{netAmount > 0 ? '+' : ''}{formatCurrency(netAmount)}</Text>
           </View>
         </View>
 
@@ -556,14 +392,8 @@ export default function ReportsScreen({
             { key: 'income', label: 'Thu nhập' },
           ].map((tab) => {
             const active = activeType === tab.key;
-
             return (
-              <TouchableOpacity
-                key={tab.key}
-                activeOpacity={0.85}
-                style={[styles.tabButton, active && styles.tabButtonActive]}
-                onPress={() => setActiveType(tab.key)}
-              >
+              <TouchableOpacity key={tab.key} activeOpacity={0.85} style={[styles.tabButton, active && styles.tabButtonActive]} onPress={() => setActiveType(tab.key)}>
                 <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{tab.label}</Text>
               </TouchableOpacity>
             );
@@ -575,7 +405,21 @@ export default function ReportsScreen({
 
           <View style={styles.categoryList}>
             {breakdown.map((item) => (
-              <View key={item.categoryKey} style={styles.categoryRow}>
+              <TouchableOpacity
+                key={item.categoryKey}
+                activeOpacity={0.85}
+                style={styles.categoryRow}
+                onPress={() =>
+                  onOpenTransactionGroup({
+                    title: `${item.category} • ${monthLabel}`,
+                    transactions: searchedTransactions.filter(
+                      (transaction) =>
+                        transaction.type === activeType &&
+                        transaction.categoryKey === item.categoryKey
+                    ),
+                  })
+                }
+              >
                 <View style={styles.categoryIconWrap}>
                   <MaterialCommunityIcons name={item.icon} size={28} color={item.tint} />
                 </View>
@@ -588,40 +432,63 @@ export default function ReportsScreen({
                   <Text style={styles.categoryPercent}>{formatPercent(item.percent)}</Text>
                 </View>
                 <Ionicons name="chevron-forward" size={18} color={theme.textSoft} />
-              </View>
+              </TouchableOpacity>
             ))}
           </View>
         </View>
 
+        {searchLower ? (
+          <View style={styles.resultPanel}>
+            <View style={appStyles.panelCard}>
+              <SectionHeader title={t('search_results_count', { count: searchedTransactions.length })} theme={theme} />
+              {searchedTransactions.length === 0 ? (
+                <Text style={styles.emptyText}>{t('search_no_results')}</Text>
+              ) : (
+                searchedTransactions.map((item) => (
+                  <TransactionItem
+                    key={item.id}
+                    item={item}
+                    walletName={walletMap[item.walletId]}
+                    onPress={() => onEditTransaction(item)}
+                    theme={theme}
+                  />
+                ))
+              )}
+            </View>
+          </View>
+        ) : null}
+
         <View style={styles.budgetPanel}>
           <View style={appStyles.panelCard}>
             <SectionHeader title={t('monthly_budget_map')} theme={theme} />
-            {insights.budgetSnapshot.length === 0 ? (
+            {filteredBudgetSnapshot.length === 0 ? (
               <View style={styles.emptyWrap}>
-                <Text style={styles.emptyText}>{t('no_expense_month')}</Text>
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  style={styles.addBudgetButton}
-                  onPress={() => onEditBudget(null)}
-                >
-                  <Text style={styles.addBudgetText}>{t('create_budget')}</Text>
-                </TouchableOpacity>
+                <Text style={styles.emptyText}>{searchLower ? t('search_no_results') : t('no_expense_month')}</Text>
+                {!searchLower ? (
+                  <TouchableOpacity activeOpacity={0.85} style={styles.addBudgetButton} onPress={() => onEditBudget(null)}>
+                    <Text style={styles.addBudgetText}>{t('create_budget')}</Text>
+                  </TouchableOpacity>
+                ) : null}
               </View>
             ) : (
-              insights.budgetSnapshot.map((budget) => {
+              filteredBudgetSnapshot.map((budget) => {
                 const progress = Math.min(budget.progress, 1);
-                const accent = budget.isOverLimit
-                  ? theme.danger
-                  : budget.isNearLimit
-                    ? theme.warning
-                    : theme.accent;
+                const accent = budget.isOverLimit ? theme.danger : budget.isNearLimit ? theme.warning : theme.accent;
 
                 return (
                   <SwipeableRow key={budget.id} onDelete={() => onDeleteBudget(budget.id)}>
                     <TouchableOpacity
                       activeOpacity={0.85}
                       style={styles.budgetCard}
-                      onPress={() => onEditBudget(budget)}
+                      onPress={() =>
+                        onOpenTransactionGroup({
+                          title: `${budget.category} • ${monthLabel}`,
+                          transactions: insights.monthTransactions.filter(
+                            (transaction) => transaction.categoryKey === budget.categoryKey
+                          ),
+                        })
+                      }
+                      onLongPress={() => onEditBudget(budget)}
                     >
                       <View style={styles.budgetHeader}>
                         <Text style={styles.budgetTitle}>{budget.category}</Text>
@@ -630,12 +497,7 @@ export default function ReportsScreen({
                         </Text>
                       </View>
                       <View style={styles.track}>
-                        <View
-                          style={[
-                            styles.fill,
-                            { width: `${progress * 100}%`, backgroundColor: accent },
-                          ]}
-                        />
+                        <View style={[styles.fill, { width: `${progress * 100}%`, backgroundColor: accent }]} />
                       </View>
                       <Text style={styles.budgetHint}>
                         {budget.isOverLimit
