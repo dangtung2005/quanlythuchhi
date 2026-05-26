@@ -9,6 +9,16 @@ import { createAppStyles } from '../styles/appStyles';
 import { analyzeFinance } from '../utils/smartInsights';
 import { formatCurrency, formatDateBadge, t } from '../utils/formatters';
 
+function normalizeSearchText(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .toLowerCase()
+    .trim();
+}
+
 function QuickActionButton({ item, onPress, styles, theme }) {
   return (
     <TouchableOpacity activeOpacity={0.85} style={styles.quickAction} onPress={onPress}>
@@ -174,18 +184,49 @@ export default function HomeScreen({
       : t('forecast_surplus', {
           amount: formatCurrency(Math.max(insights.projectedSavings, 0)),
         });
+  const normalizedQuery = normalizeSearchText(searchQuery);
+  const walletSearchKeywords = useMemo(
+    () =>
+      [
+        t('wallet'),
+        t('wallet_stack'),
+        t('quick_wallets'),
+        'tai khoan',
+        'ngan hang',
+        'tiet kiem',
+      ].map(normalizeSearchText),
+    [data.settings.language]
+  );
+  const searchTargetsWallets =
+    normalizedQuery.length > 0 &&
+    walletSearchKeywords.some((keyword) => keyword.includes(normalizedQuery) || normalizedQuery.includes(keyword));
+
+  const filteredWallets = useMemo(() => {
+    if (!normalizedQuery) return data.wallets;
+
+    if (searchTargetsWallets) {
+      return data.wallets;
+    }
+
+    return data.wallets.filter((wallet) => {
+      const walletText = normalizeSearchText(
+        [wallet.name, wallet.bankName, wallet.type, wallet.accountName].filter(Boolean).join(' ')
+      );
+      return walletText.includes(normalizedQuery);
+    });
+  }, [data.wallets, normalizedQuery, searchTargetsWallets]);
 
   const filteredTransactions = useMemo(() => {
     if (!searchQuery.trim()) return recentTransactions;
-    const query = searchQuery.trim().toLowerCase();
+
     return data.transactions.filter(
       (item) =>
-        item.title.toLowerCase().includes(query) ||
-        item.category.toLowerCase().includes(query) ||
-        walletMap[item.walletId]?.toLowerCase().includes(query) ||
-        (item.note && item.note.toLowerCase().includes(query))
+        normalizeSearchText(item.title).includes(normalizedQuery) ||
+        normalizeSearchText(item.category).includes(normalizedQuery) ||
+        normalizeSearchText(walletMap[item.walletId]).includes(normalizedQuery) ||
+        normalizeSearchText(item.note).includes(normalizedQuery)
     );
-  }, [data.transactions, recentTransactions, searchQuery, walletMap]);
+  }, [data.transactions, normalizedQuery, recentTransactions, searchQuery, walletMap]);
 
   return (
     <View style={styles.screen}>
@@ -268,28 +309,36 @@ export default function HomeScreen({
           ))}
         </View>
 
-        <View style={appStyles.panelCard}>
-          <SectionHeader
-            title={t('wallet_stack')}
-            actionText={t('open_reports')}
-            onActionPress={onOpenReports}
-            theme={theme}
-          />
-          <View style={styles.walletGrid}>
-            {data.wallets.map((wallet) => (
-              <WalletCard key={wallet.id} wallet={wallet} styles={styles} />
-            ))}
+        {(!searchQuery || filteredWallets.length > 0) ? (
+          <View style={appStyles.panelCard}>
+            <SectionHeader
+              title={
+                searchQuery
+                  ? `${t('wallet_stack')} (${filteredWallets.length})`
+                  : t('wallet_stack')
+              }
+              actionText={t('open_reports')}
+              onActionPress={onOpenReports}
+              theme={theme}
+            />
+            <View style={styles.walletGrid}>
+              {filteredWallets.map((wallet) => (
+                <WalletCard key={wallet.id} wallet={wallet} styles={styles} />
+              ))}
+            </View>
           </View>
-        </View>
+        ) : null}
 
-        <SmartSpotlight
-          insights={insights}
-          theme={theme}
-          styles={styles}
-          onOpenReports={onOpenReports}
-          onOpenTransactionGroup={onOpenTransactionGroup}
-          selectedDate={selectedDate}
-        />
+        {!searchQuery ? (
+          <SmartSpotlight
+            insights={insights}
+            theme={theme}
+            styles={styles}
+            onOpenReports={onOpenReports}
+            onOpenTransactionGroup={onOpenTransactionGroup}
+            selectedDate={selectedDate}
+          />
+        ) : null}
 
         <View style={appStyles.panelCard}>
           <SectionHeader
