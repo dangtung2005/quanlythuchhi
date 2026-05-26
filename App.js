@@ -200,6 +200,14 @@ export default function App() {
     await addTransaction(payload);
   }
 
+  async function handleDeleteTransactionFromGroup(transactionId) {
+    await deleteTransaction(transactionId);
+    setTransactionGroupConfig((current) => ({
+      ...current,
+      transactions: current.transactions.filter((item) => item.id !== transactionId),
+    }));
+  }
+
   function handleReadNotification(notificationId) {
     setReadNotificationIds((current) =>
       current.includes(notificationId) ? current : [...current, notificationId]
@@ -491,7 +499,7 @@ export default function App() {
             transactions={transactionGroupConfig.transactions}
             walletMap={walletMap}
             onSelectTransaction={openEditModal}
-            onDeleteTransaction={deleteTransaction}
+            onDeleteTransaction={handleDeleteTransactionFromGroup}
           />
 
           <View style={styles.bottomBar}>
