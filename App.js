@@ -84,7 +84,7 @@ export default function App() {
   const tabs = [
     { key: 'home', label: t('tab_home'), icon: 'home' },
     { key: 'reports', label: t('tab_reports'), icon: 'pie-chart-outline' },
-    { key: 'smart', label: t('tab_smart'), icon: 'sparkles-outline' },
+    { key: 'smart', label: 'Thông minh', icon: 'sparkles-outline', isCenter: true },
     { key: 'wallets', label: t('tab_wallets'), icon: 'wallet-outline' },
     { key: 'profile', label: t('tab_profile'), icon: 'person-outline' },
   ];
@@ -496,53 +496,46 @@ export default function App() {
 
           <View style={styles.bottomBar}>
             <View style={styles.bottomRow}>
-              {tabs.slice(0, 2).map((tab) => (
+              {tabs.map((tab) => {
+                const isActive = activeTab === tab.key;
+
+                return (
                 <TouchableOpacity
                   key={tab.key}
                   activeOpacity={0.85}
-                  style={styles.bottomItem}
+                  style={[
+                    styles.bottomItem,
+                    tab.isCenter && styles.bottomItemCenter,
+                    isActive && styles.bottomItemActive,
+                  ]}
                   onPress={() => handleTabChange(tab.key)}
                 >
-                  <Ionicons
-                    name={tab.icon}
-                    size={22}
-                    color={activeTab === tab.key ? theme.accent : theme.bottomInactive}
-                  />
+                  <View
+                    style={[
+                      styles.bottomIconWrap,
+                      isActive && styles.bottomIconWrapActive,
+                      tab.isCenter && styles.bottomIconWrapCenter,
+                    ]}
+                  >
+                    <Ionicons
+                      name={tab.icon}
+                      size={tab.isCenter ? 21 : 20}
+                      color={isActive ? theme.accent : theme.bottomInactive}
+                    />
+                  </View>
                   <Text
                     style={[
                       styles.bottomText,
-                      activeTab === tab.key && styles.bottomTextActive,
+                      tab.isCenter && styles.bottomTextCenter,
+                      isActive && styles.bottomTextActive,
                     ]}
+                    numberOfLines={1}
                   >
                     {tab.label}
                   </Text>
                 </TouchableOpacity>
-              ))}
-
-              <View style={styles.addGap} />
-
-              {tabs.slice(2).map((tab) => (
-                <TouchableOpacity
-                  key={tab.key}
-                  activeOpacity={0.85}
-                  style={styles.bottomItem}
-                  onPress={() => handleTabChange(tab.key)}
-                >
-                  <Ionicons
-                    name={tab.icon}
-                    size={22}
-                    color={activeTab === tab.key ? theme.accent : theme.bottomInactive}
-                  />
-                  <Text
-                    style={[
-                      styles.bottomText,
-                      activeTab === tab.key && styles.bottomTextActive,
-                    ]}
-                  >
-                    {tab.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                );
+              })}
             </View>
 
             <TouchableOpacity
@@ -572,9 +565,10 @@ function createStyles(theme) {
       right: 16,
       bottom: 18,
       backgroundColor: theme.bottomBar,
-      borderRadius: 28,
-      paddingHorizontal: 6,
-      paddingVertical: 12,
+      borderRadius: 30,
+      paddingHorizontal: 10,
+      paddingTop: 34,
+      paddingBottom: 12,
       borderWidth: 1,
       borderColor: theme.bottomBarBorder,
       shadowColor: theme.mode === 'dark' ? '#000000' : '#0e3a2b',
@@ -589,17 +583,50 @@ function createStyles(theme) {
       alignItems: 'center',
       justifyContent: 'space-between',
     },
-    bottomItem: { flex: 1, alignItems: 'center', justifyContent: 'center', minWidth: 0 },
-    addGap: {
-      width: 72,
-      flexShrink: 0,
+    bottomItem: {
+      flex: 1,
+      minWidth: 0,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 6,
+      paddingHorizontal: 2,
+      borderRadius: 18,
     },
-    bottomText: { marginTop: 4, fontSize: 12, color: theme.bottomInactive, fontWeight: '600' },
-    bottomTextActive: { color: theme.accent },
+    bottomItemCenter: {
+      paddingTop: 20,
+    },
+    bottomItemActive: {
+      backgroundColor: theme.surfaceAlt,
+    },
+    bottomIconWrap: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    bottomIconWrapActive: {
+      backgroundColor: theme.accentSoft,
+    },
+    bottomIconWrapCenter: {
+      marginTop: 4,
+    },
+    bottomText: {
+      marginTop: 4,
+      fontSize: 10,
+      lineHeight: 12,
+      color: theme.bottomInactive,
+      fontWeight: '700',
+      textAlign: 'center',
+    },
+    bottomTextCenter: {
+      fontSize: 9,
+    },
+    bottomTextActive: { color: theme.accentStrong },
     addButton: {
       position: 'absolute',
       left: '50%',
-      top: -34,
+      top: -24,
       marginLeft: -32,
       zIndex: 2,
       width: 64,
@@ -608,6 +635,8 @@ function createStyles(theme) {
       backgroundColor: theme.accent,
       alignItems: 'center',
       justifyContent: 'center',
+      borderWidth: 5,
+      borderColor: theme.bottomBar,
       shadowColor: theme.mode === 'dark' ? '#000000' : '#0e5b3d',
       shadowOpacity: 0.22,
       shadowRadius: 16,
