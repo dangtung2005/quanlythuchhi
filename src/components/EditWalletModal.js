@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -102,82 +105,94 @@ export default function EditWalletModal({
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <View style={styles.backdrop}>
+      <KeyboardAvoidingView
+        style={styles.backdrop}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={18}
+      >
         <Pressable style={styles.backdropPressable} onPress={onClose} />
         <View style={styles.card}>
-          <View style={styles.header}>
-            <Text style={styles.title}>{isCreateMode ? 'Thêm ví mới' : 'Chỉnh sửa ví'}</Text>
-            <TouchableOpacity activeOpacity={0.85} onPress={onClose}>
-              <Ionicons name="close" size={24} color="#2d241c" />
-            </TouchableOpacity>
-          </View>
-
-          <TextInput
-            placeholder="Tên ví hoặc tài khoản"
-            placeholderTextColor="#9c8b79"
-            style={styles.input}
-            value={name}
-            onChangeText={setName}
-          />
-
-          <TouchableOpacity
-            activeOpacity={0.85}
-            style={styles.amountField}
-            onPress={() => setNumberPadVisible(true)}
+          <ScrollView
+            bounces={false}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.content}
           >
-            <Text style={amount ? styles.amountText : styles.amountPlaceholder}>
-              {amount ? formatCurrency(Number(amount)) : 'Số dư hiện tại'}
-            </Text>
-          </TouchableOpacity>
-
-          <Text style={styles.label}>Màu đại diện</Text>
-          <View style={styles.colorRow}>
-            {WALLET_COLORS.map((item) => (
-              <TouchableOpacity
-                key={item}
-                activeOpacity={0.85}
-                style={[
-                  styles.colorDot,
-                  { backgroundColor: item },
-                  color === item && styles.colorDotActive,
-                ]}
-                onPress={() => setColor(item)}
-              >
-                {color === item ? <Ionicons name="checkmark" size={18} color="#ffffff" /> : null}
+            <View style={styles.header}>
+              <Text style={styles.title}>{isCreateMode ? 'Thêm ví mới' : 'Chỉnh sửa ví'}</Text>
+              <TouchableOpacity activeOpacity={0.85} onPress={onClose}>
+                <Ionicons name="close" size={24} color="#2d241c" />
               </TouchableOpacity>
-            ))}
-          </View>
+            </View>
 
-          <View style={styles.actionRow}>
-            {!isCreateMode ? (
+            <TextInput
+              placeholder="Tên ví hoặc tài khoản"
+              placeholderTextColor="#9c8b79"
+              style={styles.input}
+              value={name}
+              onChangeText={setName}
+            />
+
+            <TouchableOpacity
+              activeOpacity={0.85}
+              style={styles.amountField}
+              onPress={() => setNumberPadVisible(true)}
+            >
+              <Text style={amount ? styles.amountText : styles.amountPlaceholder}>
+                {amount ? formatCurrency(Number(amount)) : 'Số dư hiện tại'}
+              </Text>
+            </TouchableOpacity>
+
+            <Text style={styles.label}>Màu đại diện</Text>
+            <View style={styles.colorRow}>
+              {WALLET_COLORS.map((item) => (
+                <TouchableOpacity
+                  key={item}
+                  activeOpacity={0.85}
+                  style={[
+                    styles.colorDot,
+                    { backgroundColor: item },
+                    color === item && styles.colorDotActive,
+                  ]}
+                  onPress={() => setColor(item)}
+                >
+                  {color === item ? <Ionicons name="checkmark" size={18} color="#ffffff" /> : null}
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <View style={styles.actionRow}>
+              {!isCreateMode ? (
+                <TouchableOpacity
+                  activeOpacity={0.85}
+                  style={styles.deleteButton}
+                  onPress={handleDelete}
+                  disabled={saving}
+                >
+                  <Text style={styles.deleteText}>Xóa</Text>
+                </TouchableOpacity>
+              ) : null}
+
               <TouchableOpacity
                 activeOpacity={0.85}
-                style={styles.deleteButton}
-                onPress={handleDelete}
+                style={styles.cancelButton}
+                onPress={onClose}
                 disabled={saving}
               >
-                <Text style={styles.deleteText}>Xóa</Text>
+                <Text style={styles.cancelText}>Hủy</Text>
               </TouchableOpacity>
-            ) : null}
 
-            <TouchableOpacity
-              activeOpacity={0.85}
-              style={styles.cancelButton}
-              onPress={onClose}
-              disabled={saving}
-            >
-              <Text style={styles.cancelText}>Hủy</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              activeOpacity={0.85}
-              style={styles.submitButton}
-              onPress={handleSubmit}
-              disabled={saving}
-            >
-              <Text style={styles.submitText}>{saving ? 'Đang lưu...' : isCreateMode ? 'Thêm' : 'Lưu'}</Text>
-            </TouchableOpacity>
-          </View>
+              <TouchableOpacity
+                activeOpacity={0.85}
+                style={styles.submitButton}
+                onPress={handleSubmit}
+                disabled={saving}
+              >
+                <Text style={styles.submitText}>
+                  {saving ? 'Đang lưu...' : isCreateMode ? 'Thêm' : 'Lưu'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
         </View>
 
         <NumberPadModal
@@ -187,7 +202,7 @@ export default function EditWalletModal({
           onClose={() => setNumberPadVisible(false)}
           onSubmit={setAmount}
         />
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -199,9 +214,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff9f0',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 20,
     paddingBottom: 34,
+    maxHeight: '78%',
   },
+  content: { paddingBottom: 6 },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',

@@ -1,7 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -140,130 +143,140 @@ export default function AddTransactionModal({
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <View style={styles.backdrop}>
+      <KeyboardAvoidingView
+        style={styles.backdrop}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={18}
+      >
         <Pressable style={styles.backdropPressable} onPress={onClose} />
         <View style={styles.card}>
-          <View style={styles.header}>
-            <Text style={styles.title}>
-              {initialTransaction ? t('edit_transaction') : t('new_smart_transaction')}
-            </Text>
-            <TouchableOpacity activeOpacity={0.85} onPress={onClose}>
-              <Ionicons name="close" size={24} color="#2d241c" />
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.segmented}>
-            <TouchableOpacity
-              activeOpacity={0.85}
-              style={[styles.segmentButton, type === 'expense' && styles.segmentActive]}
-              onPress={() => handleTypeChange('expense')}
-            >
-              <Text style={[styles.segmentText, type === 'expense' && styles.segmentTextActive]}>
-                {t('expense')}
+          <ScrollView
+            bounces={false}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.content}
+          >
+            <View style={styles.header}>
+              <Text style={styles.title}>
+                {initialTransaction ? t('edit_transaction') : t('new_smart_transaction')}
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.85}
-              style={[styles.segmentButton, type === 'income' && styles.segmentActive]}
-              onPress={() => handleTypeChange('income')}
-            >
-              <Text style={[styles.segmentText, type === 'income' && styles.segmentTextActive]}>
-                {t('income')}
-              </Text>
-            </TouchableOpacity>
-          </View>
+              <TouchableOpacity activeOpacity={0.85} onPress={onClose}>
+                <Ionicons name="close" size={24} color="#2d241c" />
+              </TouchableOpacity>
+            </View>
 
-          <TextInput
-            placeholder={t('transaction_title')}
-            placeholderTextColor="#9c8b79"
-            style={styles.input}
-            value={title}
-            onChangeText={(nextValue) => {
-              setTitle(nextValue);
-              setValidationMessage('');
-            }}
-          />
+            <View style={styles.segmented}>
+              <TouchableOpacity
+                activeOpacity={0.85}
+                style={[styles.segmentButton, type === 'expense' && styles.segmentActive]}
+                onPress={() => handleTypeChange('expense')}
+              >
+                <Text style={[styles.segmentText, type === 'expense' && styles.segmentTextActive]}>
+                  {t('expense')}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                activeOpacity={0.85}
+                style={[styles.segmentButton, type === 'income' && styles.segmentActive]}
+                onPress={() => handleTypeChange('income')}
+              >
+                <Text style={[styles.segmentText, type === 'income' && styles.segmentTextActive]}>
+                  {t('income')}
+                </Text>
+              </TouchableOpacity>
+            </View>
 
-          {smartSuggestion ? (
-            <View style={styles.suggestionCard}>
+            <TextInput
+              placeholder={t('transaction_title')}
+              placeholderTextColor="#9c8b79"
+              style={styles.input}
+              value={title}
+              onChangeText={(nextValue) => {
+                setTitle(nextValue);
+                setValidationMessage('');
+              }}
+            />
+
+            {smartSuggestion ? (
+              <View style={styles.suggestionCard}>
                 <Ionicons name="sparkles-outline" size={16} color="#ee8e34" />
                 <Text style={styles.suggestionText}>
-                {t('smart_suggest', { category: smartSuggestion })}
+                  {t('smart_suggest', { category: smartSuggestion })}
                 </Text>
               </View>
-          ) : null}
+            ) : null}
 
-          <TouchableOpacity
-            activeOpacity={0.85}
-            style={styles.amountField}
-            onPress={() => setNumberPadVisible(true)}
-          >
-            <Text style={amount ? styles.amountText : styles.amountPlaceholder}>
-              {amount ? formatCurrency(Number(amount)) : t('amount')}
-            </Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.85}
+              style={styles.amountField}
+              onPress={() => setNumberPadVisible(true)}
+            >
+              <Text style={amount ? styles.amountText : styles.amountPlaceholder}>
+                {amount ? formatCurrency(Number(amount)) : t('amount')}
+              </Text>
+            </TouchableOpacity>
 
-          <TextInput
-            placeholder={t('note')}
-            placeholderTextColor="#9c8b79"
-            style={[styles.input, styles.note]}
-            value={note}
-            onChangeText={setNote}
-            multiline
-          />
+            <TextInput
+              placeholder={t('note')}
+              placeholderTextColor="#9c8b79"
+              style={[styles.input, styles.note]}
+              value={note}
+              onChangeText={setNote}
+              multiline
+            />
 
-          <Text style={styles.label}>{t('wallet')}</Text>
-          <View style={styles.wrap}>
-            {wallets.map((wallet) => (
-              <TouchableOpacity
-                key={wallet.id}
-                activeOpacity={0.85}
-                style={[styles.chip, walletId === wallet.id && styles.chipActive]}
-                onPress={() => setWalletId(wallet.id)}
-              >
-                <Text style={[styles.chipText, walletId === wallet.id && styles.chipTextActive]}>
-                  {wallet.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+            <Text style={styles.label}>{t('wallet')}</Text>
+            <View style={styles.wrap}>
+              {wallets.map((wallet) => (
+                <TouchableOpacity
+                  key={wallet.id}
+                  activeOpacity={0.85}
+                  style={[styles.chip, walletId === wallet.id && styles.chipActive]}
+                  onPress={() => setWalletId(wallet.id)}
+                >
+                  <Text style={[styles.chipText, walletId === wallet.id && styles.chipTextActive]}>
+                    {wallet.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
 
-          <Text style={styles.label}>{t('category')}</Text>
-          <View style={styles.wrap}>
-            {filteredCategories.map((item) => (
-              <TouchableOpacity
-                key={item.label}
-                activeOpacity={0.85}
-                style={[styles.chip, category === item.label && styles.chipActive]}
-                onPress={() => {
-                  setCategory(item.label);
-                  setCategoryTouched(true);
-                  setSmartSuggestion(item.label === smartSuggestion ? smartSuggestion : null);
-                }}
-              >
-                <Text style={[styles.chipText, category === item.label && styles.chipTextActive]}>
-                  {item.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+            <Text style={styles.label}>{t('category')}</Text>
+            <View style={styles.wrap}>
+              {filteredCategories.map((item) => (
+                <TouchableOpacity
+                  key={item.label}
+                  activeOpacity={0.85}
+                  style={[styles.chip, category === item.label && styles.chipActive]}
+                  onPress={() => {
+                    setCategory(item.label);
+                    setCategoryTouched(true);
+                    setSmartSuggestion(item.label === smartSuggestion ? smartSuggestion : null);
+                  }}
+                >
+                  <Text style={[styles.chipText, category === item.label && styles.chipTextActive]}>
+                    {item.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
 
-          {validationMessage ? <Text style={styles.validationText}>{validationMessage}</Text> : null}
+            {validationMessage ? <Text style={styles.validationText}>{validationMessage}</Text> : null}
 
-          <TouchableOpacity
-            activeOpacity={0.85}
-            style={styles.submitButton}
-            onPress={handleSubmit}
-            disabled={saving}
-          >
-            <Text style={styles.submitText}>
-              {saving
-                ? 'Saving...'
-                : initialTransaction
-                  ? t('update_transaction')
-                  : t('create_transaction')}
-            </Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.85}
+              style={styles.submitButton}
+              onPress={handleSubmit}
+              disabled={saving}
+            >
+              <Text style={styles.submitText}>
+                {saving
+                  ? 'Saving...'
+                  : initialTransaction
+                    ? t('update_transaction')
+                    : t('create_transaction')}
+              </Text>
+            </TouchableOpacity>
+          </ScrollView>
         </View>
 
         <NumberPadModal
@@ -275,7 +288,7 @@ export default function AddTransactionModal({
           displayLabel={t('live_amount')}
           submitText={t('use_amount')}
         />
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -287,9 +300,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff9f0',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 20,
     paddingBottom: 34,
+    maxHeight: '86%',
   },
+  content: { paddingBottom: 8 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 },
   title: { fontSize: 22, fontWeight: '800', color: '#2d241c' },
   segmented: { flexDirection: 'row', backgroundColor: '#f3e8d9', borderRadius: 16, padding: 4, marginBottom: 14 },

@@ -1,5 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { formatCurrency } from '../utils/formatters';
 import NumberPadModal from './NumberPadModal';
@@ -50,49 +61,59 @@ export default function EditBudgetModal({
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <View style={styles.backdrop}>
+      <KeyboardAvoidingView
+        style={styles.backdrop}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={18}
+      >
         <Pressable style={styles.backdropPressable} onPress={onClose} />
         <View style={styles.card}>
-          <View style={styles.header}>
-            <Text style={styles.title}>
-              {isCreateMode ? 'Thêm mục ngân sách' : 'Chỉnh sửa ngân sách'}
-            </Text>
-            <TouchableOpacity activeOpacity={0.85} onPress={onClose}>
-              <Ionicons name="close" size={24} color="#2d241c" />
-            </TouchableOpacity>
-          </View>
-
-          <TextInput
-            placeholder="Tên ngân sách"
-            placeholderTextColor="#9c8b79"
-            style={styles.input}
-            value={category}
-            onChangeText={setCategory}
-          />
-
-          <TouchableOpacity
-            activeOpacity={0.85}
-            style={styles.amountField}
-            onPress={() => setNumberPadVisible(true)}
+          <ScrollView
+            bounces={false}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.content}
           >
-            <Text style={limit ? styles.amountText : styles.amountPlaceholder}>
-              {limit ? formatCurrency(Number(limit)) : 'Hạn mức ngân sách'}
-            </Text>
-          </TouchableOpacity>
+            <View style={styles.header}>
+              <Text style={styles.title}>
+                {isCreateMode ? 'Thêm mục ngân sách' : 'Chỉnh sửa ngân sách'}
+              </Text>
+              <TouchableOpacity activeOpacity={0.85} onPress={onClose}>
+                <Ionicons name="close" size={24} color="#2d241c" />
+              </TouchableOpacity>
+            </View>
 
-          <View style={styles.actionRow}>
-            <TouchableOpacity activeOpacity={0.85} style={styles.cancelButton} onPress={onClose}>
-              <Text style={styles.cancelText}>Hủy</Text>
-            </TouchableOpacity>
+            <TextInput
+              placeholder="Tên ngân sách"
+              placeholderTextColor="#9c8b79"
+              style={styles.input}
+              value={category}
+              onChangeText={setCategory}
+            />
+
             <TouchableOpacity
               activeOpacity={0.85}
-              style={styles.submitButton}
-              onPress={handleSubmit}
-              disabled={saving}
+              style={styles.amountField}
+              onPress={() => setNumberPadVisible(true)}
             >
-              <Text style={styles.submitText}>{saving ? 'Đang lưu...' : 'Nhập'}</Text>
+              <Text style={limit ? styles.amountText : styles.amountPlaceholder}>
+                {limit ? formatCurrency(Number(limit)) : 'Hạn mức ngân sách'}
+              </Text>
             </TouchableOpacity>
-          </View>
+
+            <View style={styles.actionRow}>
+              <TouchableOpacity activeOpacity={0.85} style={styles.cancelButton} onPress={onClose}>
+                <Text style={styles.cancelText}>Hủy</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                activeOpacity={0.85}
+                style={styles.submitButton}
+                onPress={handleSubmit}
+                disabled={saving}
+              >
+                <Text style={styles.submitText}>{saving ? 'Đang lưu...' : 'Nhập'}</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
         </View>
 
         <NumberPadModal
@@ -102,7 +123,7 @@ export default function EditBudgetModal({
           onClose={() => setNumberPadVisible(false)}
           onSubmit={setLimit}
         />
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -110,7 +131,16 @@ export default function EditBudgetModal({
 const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(25, 18, 10, 0.35)', justifyContent: 'flex-end' },
   backdropPressable: { flex: 1 },
-  card: { backgroundColor: '#fff9f0', borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 20, paddingBottom: 34 },
+  card: {
+    backgroundColor: '#fff9f0',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 34,
+    maxHeight: '78%',
+  },
+  content: { paddingBottom: 6 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 },
   title: { fontSize: 22, fontWeight: '800', color: '#2d241c' },
   input: { backgroundColor: '#ffffff', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 14, fontSize: 15, color: '#2d241c', marginBottom: 12 },
