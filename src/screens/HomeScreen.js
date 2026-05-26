@@ -169,7 +169,7 @@ export default function HomeScreen({
             ? t('quick_add_income')
             : item.key === 'add_expense'
               ? t('quick_add_expense')
-              : item.key === 'budget'
+              : item.key === 'smart'
                 ? t('quick_budget')
                 : t('quick_wallets'),
       })),

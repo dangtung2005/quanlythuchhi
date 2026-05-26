@@ -25,6 +25,7 @@ import HomeScreen from './src/screens/HomeScreen';
 import NotificationScreen from './src/screens/NotificationScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import ReportsScreen from './src/screens/ReportsScreen';
+import SmartScreen from './src/screens/SmartScreen';
 import WalletsScreen from './src/screens/WalletsScreen';
 import { useFinanceApp } from './src/hooks/useFinanceApp';
 import { exportFinanceDataToCsv, importFinanceDataFromCsv } from './src/utils/csvPortability';
@@ -83,6 +84,7 @@ export default function App() {
   const tabs = [
     { key: 'home', label: t('tab_home'), icon: 'home' },
     { key: 'reports', label: t('tab_reports'), icon: 'pie-chart-outline' },
+    { key: 'smart', label: t('tab_smart'), icon: 'sparkles-outline' },
     { key: 'wallets', label: t('tab_wallets'), icon: 'wallet-outline' },
     { key: 'profile', label: t('tab_profile'), icon: 'person-outline' },
   ];
@@ -248,6 +250,19 @@ export default function App() {
           onDeleteBudget={deleteBudget}
           onChangeMonth={handleChangeMonth}
           onOpenDateFilter={() => setDateModalVisible(true)}
+          onOpenTransactionGroup={openTransactionGroup}
+        />
+      );
+    }
+
+    if (activeTab === 'smart') {
+      return (
+        <SmartScreen
+          data={data}
+          theme={theme}
+          selectedDate={selectedDate}
+          onOpenDateFilter={() => setDateModalVisible(true)}
+          onOpenReports={() => handleTabChange('reports')}
           onOpenTransactionGroup={openTransactionGroup}
         />
       );
@@ -480,28 +495,55 @@ export default function App() {
           />
 
           <View style={styles.bottomBar}>
-            {tabs.slice(0, 2).map((tab) => (
-              <TouchableOpacity
-                key={tab.key}
-                activeOpacity={0.85}
-                style={styles.bottomItem}
-                onPress={() => handleTabChange(tab.key)}
-              >
-                <Ionicons
-                  name={tab.icon}
-                  size={22}
-                  color={activeTab === tab.key ? theme.accent : theme.bottomInactive}
-                />
-                <Text
-                  style={[
-                    styles.bottomText,
-                    activeTab === tab.key && styles.bottomTextActive,
-                  ]}
+            <View style={styles.bottomRow}>
+              {tabs.slice(0, 2).map((tab) => (
+                <TouchableOpacity
+                  key={tab.key}
+                  activeOpacity={0.85}
+                  style={styles.bottomItem}
+                  onPress={() => handleTabChange(tab.key)}
                 >
-                  {tab.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <Ionicons
+                    name={tab.icon}
+                    size={22}
+                    color={activeTab === tab.key ? theme.accent : theme.bottomInactive}
+                  />
+                  <Text
+                    style={[
+                      styles.bottomText,
+                      activeTab === tab.key && styles.bottomTextActive,
+                    ]}
+                  >
+                    {tab.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+
+              <View style={styles.addGap} />
+
+              {tabs.slice(2).map((tab) => (
+                <TouchableOpacity
+                  key={tab.key}
+                  activeOpacity={0.85}
+                  style={styles.bottomItem}
+                  onPress={() => handleTabChange(tab.key)}
+                >
+                  <Ionicons
+                    name={tab.icon}
+                    size={22}
+                    color={activeTab === tab.key ? theme.accent : theme.bottomInactive}
+                  />
+                  <Text
+                    style={[
+                      styles.bottomText,
+                      activeTab === tab.key && styles.bottomTextActive,
+                    ]}
+                  >
+                    {tab.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
 
             <TouchableOpacity
               activeOpacity={0.85}
@@ -510,29 +552,6 @@ export default function App() {
             >
               <Ionicons name="add" size={30} color="#ffffff" />
             </TouchableOpacity>
-
-            {tabs.slice(2).map((tab) => (
-              <TouchableOpacity
-                key={tab.key}
-                activeOpacity={0.85}
-                style={styles.bottomItem}
-                onPress={() => handleTabChange(tab.key)}
-              >
-                <Ionicons
-                  name={tab.icon}
-                  size={22}
-                  color={activeTab === tab.key ? theme.accent : theme.bottomInactive}
-                />
-                <Text
-                  style={[
-                    styles.bottomText,
-                    activeTab === tab.key && styles.bottomTextActive,
-                  ]}
-                >
-                  {tab.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
           </View>
         </View>
       </SafeAreaView>
@@ -554,11 +573,8 @@ function createStyles(theme) {
       bottom: 18,
       backgroundColor: theme.bottomBar,
       borderRadius: 28,
-      paddingHorizontal: 10,
+      paddingHorizontal: 6,
       paddingVertical: 12,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
       borderWidth: 1,
       borderColor: theme.bottomBarBorder,
       shadowColor: theme.mode === 'dark' ? '#000000' : '#0e3a2b',
@@ -566,23 +582,37 @@ function createStyles(theme) {
       shadowRadius: 16,
       shadowOffset: { width: 0, height: 8 },
       elevation: 8,
+      overflow: 'visible',
     },
-    bottomItem: { alignItems: 'center', justifyContent: 'center', minWidth: 58 },
+    bottomRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    bottomItem: { flex: 1, alignItems: 'center', justifyContent: 'center', minWidth: 0 },
+    addGap: {
+      width: 72,
+      flexShrink: 0,
+    },
     bottomText: { marginTop: 4, fontSize: 12, color: theme.bottomInactive, fontWeight: '600' },
     bottomTextActive: { color: theme.accent },
     addButton: {
-      width: 58,
-      height: 58,
-      borderRadius: 29,
+      position: 'absolute',
+      left: '50%',
+      top: -34,
+      marginLeft: -32,
+      zIndex: 2,
+      width: 64,
+      height: 64,
+      borderRadius: 32,
       backgroundColor: theme.accent,
       alignItems: 'center',
       justifyContent: 'center',
-      marginTop: -30,
       shadowColor: theme.mode === 'dark' ? '#000000' : '#0e5b3d',
       shadowOpacity: 0.22,
-      shadowRadius: 12,
-      shadowOffset: { width: 0, height: 6 },
-      elevation: 5,
+      shadowRadius: 16,
+      shadowOffset: { width: 0, height: 10 },
+      elevation: 8,
     },
   });
 }

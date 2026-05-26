@@ -178,7 +178,7 @@ export const DEFAULT_DATA = {
 export const QUICK_ACTIONS = [
   { key: 'add_income', label: 'Thêm thu', icon: 'cash-plus', type: 'income' },
   { key: 'add_expense', label: 'Thêm chi', icon: 'cash-minus', type: 'expense' },
-  { key: 'budget', label: 'Ngân sách', icon: 'wallet-outline', tab: 'reports' },
+  { key: 'smart', label: 'Góc thông minh', icon: 'sparkles-outline', tab: 'smart' },
   { key: 'wallet', label: 'Ví tiền', icon: 'credit-card-outline', tab: 'wallets' },
 ];
 
