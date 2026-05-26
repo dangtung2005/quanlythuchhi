@@ -538,13 +538,15 @@ export default function App() {
               })}
             </View>
 
-            <TouchableOpacity
-              activeOpacity={0.85}
-              style={styles.addButton}
-              onPress={() => openAddModal()}
-            >
-              <Ionicons name="add" size={30} color="#ffffff" />
-            </TouchableOpacity>
+            <View pointerEvents="box-none" style={styles.addButtonWrap}>
+              <TouchableOpacity
+                activeOpacity={0.85}
+                style={styles.addButton}
+                onPress={() => openAddModal()}
+              >
+                <Ionicons name="add" size={30} color="#ffffff" />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </SafeAreaView>
@@ -623,12 +625,15 @@ function createStyles(theme) {
       fontSize: 9,
     },
     bottomTextActive: { color: theme.accentStrong },
-    addButton: {
+    addButtonWrap: {
       position: 'absolute',
-      left: '50%',
       top: -24,
-      marginLeft: -32,
+      left: 0,
+      right: 0,
+      alignItems: 'center',
       zIndex: 2,
+    },
+    addButton: {
       width: 64,
       height: 64,
       borderRadius: 32,
